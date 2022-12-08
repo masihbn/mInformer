@@ -3,7 +3,7 @@ import os
 import torch
 
 from exp.exp_informer import Exp_Informer
-from informer.utils.tools import dotdict
+from utils.tools import dotdict
 
 args = dotdict()
 file_name = 'Gold Indicator 2019 12.csv'
@@ -57,8 +57,6 @@ args.distil = False  # whether to use distilling in encoder
 # args.checkpoints = './informer_checkpoints' # location of model checkpoints
 
 args.seq_len = 20  # input sequence length of Informer encoder
-args.label_len = 6  # start token length of Informer decoder
-args.pred_len = 2  # prediction sequence length
 # Informer decoder input: concat[start token series(label_len), zero padding series(pred_len)]
 
 args.test_set_length = 21   ############### Set to None if you want the default informer setting for this ###########

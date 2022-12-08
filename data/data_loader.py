@@ -101,8 +101,8 @@ class Dataset_Custom(Dataset):
     def __getitem__(self, index):
         s_begin = index
         s_end = s_begin + self.seq_len
-        r_begin = s_end - self.label_len 
-        r_end = r_begin + self.label_len + self.pred_len
+        r_begin = s_end - self.seq_len
+        r_end = r_begin + self.seq_len + 1
 
         seq_x = self.data_x[s_begin:s_end]
         if self.inverse:
@@ -116,10 +116,11 @@ class Dataset_Custom(Dataset):
         return seq_x, seq_y, seq_x_mark, seq_y_mark
     
     def __len__(self):
-        return len(self.data_x) - self.seq_len- self.pred_len + 1
+        return len(self.data_x) - self.seq_len
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
+
 
 class Dataset_Pred(Dataset):
     def __init__(self, root_path, flag='pred', size=None, 
