@@ -271,7 +271,7 @@ class Exp_Informer(Exp_Basic):
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
-        acc = self.binary_acc(pred, true)
+        acc = self.binary_acc(preds, trues)
         np.save(folder_path + 'pred.npy', preds)
         np.save(folder_path + 'true.npy', trues)
 
