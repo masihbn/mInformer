@@ -217,7 +217,6 @@ class Exp_Informer(Exp_Basic):
                         loss.backward()
                         model_optim.step()
 
-                print(acc)
                 # print("Epoch: {} cost time: {}".format(epoch+1, time.time()-epoch_time))
                 train_loss = np.average(train_loss)
                 vali_loss = self.vali(vali_data, vali_loader, criterion)
@@ -263,7 +262,7 @@ class Exp_Informer(Exp_Basic):
             preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
             trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
         except Exception as e:
-            print(str(e))
+            print('Error in test function in exp_informer.py', str(e))
         # print('test shape:', preds.shape, trues.shape)
 
         # result save
@@ -271,7 +270,7 @@ class Exp_Informer(Exp_Basic):
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
-        acc = self.binary_acc(preds, trues)
+        acc = self.binary_acc(torch.tensor(preds[0][0]), torch.tensor(trues[0][0]))
         np.save(folder_path + 'pred.npy', preds)
         np.save(folder_path + 'true.npy', trues)
 
@@ -286,7 +285,7 @@ class Exp_Informer(Exp_Basic):
             self.model.load_state_dict(torch.load(best_model_path))
 
         self.model.eval()
-
+        
         preds = []
         trues = []
 
