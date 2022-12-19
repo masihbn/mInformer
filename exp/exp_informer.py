@@ -77,7 +77,7 @@ class Exp_Informer(Exp_Basic):
         if flag == 'test':
             shuffle_flag = False
             drop_last = True
-            batch_size = args.batch_size
+            batch_size = args.test_set_length - 1
             freq = args.freq
         elif flag == 'pred':
             shuffle_flag = False
@@ -196,7 +196,7 @@ class Exp_Informer(Exp_Basic):
 
                     model_optim.zero_grad()
                     pred, true = self._process_one_batch(
-                        train_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
+                        train_data, batch_x, batch_y, batch_x_mark, batch_y_mark, self.args.batch_size)
                     loss = criterion(pred, true)
                     acc = self.binary_acc(pred, true)
                     train_loss.append(loss.item())
@@ -236,9 +236,6 @@ class Exp_Informer(Exp_Basic):
         if self.print_log:
             print(f'Losses -> Train: {train_loss} Validation: {vali_loss} Test: {test_loss}')
 
-        best_model_path = path + '/' + 'checkpoint.pth'
-        self.model.load_state_dict(torch.load(best_model_path))
-
         return self.model
 
     def test(self, setting, flag='test'):
@@ -248,10 +245,10 @@ class Exp_Informer(Exp_Basic):
 
         preds = []
         trues = []
-
+        
         for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(test_loader):
             pred, true = self._process_one_batch(
-                test_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
+                test_data, batch_x, batch_y, batch_x_mark, batch_y_mark, self.args.test_set_length - 1)
             preds.append(pred.detach().cpu().numpy())
             trues.append(true.detach().cpu().numpy())
 
@@ -264,15 +261,6 @@ class Exp_Informer(Exp_Basic):
         except Exception as e:
             print('Error in test function in exp_informer.py', str(e))
         # print('test shape:', preds.shape, trues.shape)
-
-        # result save
-        folder_path = './results/' + setting + '/'
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-
-        acc = self.binary_acc(torch.tensor(preds[0][0]), torch.tensor(trues[0][0]))
-        np.save(folder_path + 'pred.npy', preds)
-        np.save(folder_path + 'true.npy', trues)
 
         return acc
 
@@ -291,7 +279,7 @@ class Exp_Informer(Exp_Basic):
 
         for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(pred_loader):
             pred, true = self._process_one_batch(
-                pred_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
+                pred_data, batch_x, batch_y, batch_x_mark, batch_y_mark, self.args.test_set_length - 1 if flag == 'test' else self.args.batch_size)
             preds.append(pred.detach().cpu().numpy())
             trues.append(true.detach().cpu().numpy())
 
@@ -300,29 +288,15 @@ class Exp_Informer(Exp_Basic):
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
 
-        # result save
-        folder_path = './results/' + setting + '/'
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-
-        np.save(folder_path + 'real_prediction.npy', preds)
-
         return preds, trues
 
-    def _process_one_batch(self, dataset_object, batch_x, batch_y, batch_x_mark, batch_y_mark):
+    def _process_one_batch(self, dataset_object, batch_x, batch_y, batch_x_mark, batch_y_mark, batch_size):
         batch_x = batch_x.float().to(self.device)
         batch_y = batch_y.float()
 
         batch_x_mark = batch_x_mark.float().to(self.device)
         batch_y_mark = batch_y_mark.float().to(self.device)
 
-        # decoder input
-        # if self.args.padding == 0:
-        #     dec_inp = torch.zeros([batch_y.shape[0], self.args.pred_len, batch_y.shape[-1]]).float()
-        # elif self.args.padding == 1:
-        #     dec_inp = torch.ones([batch_y.shape[0], self.args.pred_len, batch_y.shape[-1]]).float()
-        # dec_inp = torch.cat([batch_y, dec_inp], dim=1).float().to(self.device)
-        # encoder - decoder
         if self.args.use_amp:
             with torch.cuda.amp.autocast():
                 if self.args.output_attention:
@@ -339,4 +313,4 @@ class Exp_Informer(Exp_Basic):
         f_dim = -1 if self.args.features == 'MS' else 0
         batch_y = batch_y[:, -1].to(self.device)
 
-        return outputs.reshape(self.args.batch_size, ), batch_y
+        return outputs.reshape(batch_size, ), batch_y
