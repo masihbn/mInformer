@@ -27,6 +27,7 @@ class Exp_Informer(Exp_Basic):
         self.k_fold = k_fold
         self.print_log = args.print_log
         self.test_set_length = args.test_set_length
+        self.args = args
 
     def _build_model(self):
         model_dict = {
@@ -133,8 +134,13 @@ class Exp_Informer(Exp_Basic):
         return model_optim
 
     def _select_criterion(self):
-        # criterion = nn.MSELoss()
-        criterion = nn.BCEWithLogitsLoss()
+        if self.args.base_decoder == 'IE-NN':
+            criterion = nn.BCEWithLogitsLoss()
+        elif self.args.base_decoder == 'IE-NNSoftmax1':
+            criterion = nn.BCEWithLogitsLoss()
+        else:
+            print('Ridi Dadach')
+
         return criterion
 
     def vali(self, vali_data, vali_loader, criterion):
@@ -150,7 +156,7 @@ class Exp_Informer(Exp_Basic):
         return total_loss
 
     def binary_acc(self, pred, true):
-        y_pred_tag = torch.round(torch.sigmoid(pred))
+        y_pred_tag = torch.round(pred if self.args.base_decoder == 'IE-NNSoftmax1' else torch.sigmoid(pred) )
 
         correct_results_sum = (y_pred_tag == true).sum().float()
         acc = correct_results_sum / true.shape[0]
@@ -254,13 +260,13 @@ class Exp_Informer(Exp_Basic):
 
         preds = np.array(preds)
         trues = np.array(trues)
-        # print('test shape:', preds.shape, trues.shape)
         try:
             preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
             trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
         except Exception as e:
             print('Error in test function in exp_informer.py', str(e))
-        # print('test shape:', preds.shape, trues.shape)
+
+        acc = self.binary_acc(torch.tensor(preds[0][0]), torch.tensor(trues[0][0]))
 
         return acc
 

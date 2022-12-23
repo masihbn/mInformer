@@ -7,7 +7,7 @@ from models.encoder import Encoder, EncoderLayer, ConvLayer, EncoderStack
 from models.decoder import Decoder
 from models.attn import FullAttention, ProbAttention, AttentionLayer
 from models.embed import DataEmbedding
-from models.decoder import DecoderLayerNN
+from models.decoder import DecoderLayerNN, DecoderLayerNNSoftmax1, DecoderLayerNNSoftmax2
 
 
 class Informer(nn.Module):
@@ -19,6 +19,7 @@ class Informer(nn.Module):
         super(Informer, self).__init__()
         decoder_dict = {
             'IE-NN': DecoderLayerNN,
+            'IE-NNSoftmax1': DecoderLayerNNSoftmax1,
         }
         self.pred_len = out_len
         self.attn = attn
