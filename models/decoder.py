@@ -18,7 +18,8 @@ class DecoderLayerNN(nn.Module):
 
     def forward(self, x, cross=None, x_mask=None, cross_mask=None):
         for layer in self.nn_layers:
-            layer.cuda()
+            if torch.cuda.is_available():
+                layer.cuda()
             x = layer(x)
 
         x = x.view(-1, self.output_dimension)
