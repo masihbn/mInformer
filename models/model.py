@@ -7,7 +7,7 @@ from models.encoder import Encoder, EncoderLayer, ConvLayer, EncoderStack
 from models.decoder import Decoder
 from models.attn import FullAttention, ProbAttention, AttentionLayer
 from models.embed import DataEmbedding
-from models.decoder import DecoderLayerNN, DecoderLayerNNSoftmax1, DecoderLayerNNSoftmax2
+from models.decoder import DecoderLayerNN, DecoderLayerNNSoftmax1
 
 
 class Informer(nn.Module):
