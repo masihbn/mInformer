@@ -26,14 +26,10 @@ def get_default_args(f_name=file_name):
     args.attn = 'prob'  # attention used in encoder, options:[prob, full]
     args.embed = 'timeF'  # time features encoding, options:[timeF, fixed, learned]
     args.activation = 'gelu'  # activation
-    args.output_attention = False  # whether to output attention in ecoder
     args.mix = True
-    args.padding = 0
     args.lradj = 'type1'
     args.use_amp = False  # whether to use automatic mixed precision training
     args.num_workers = 0
-    args.itr = 1
-    args.des = 'exp'
     args.use_gpu = True if torch.cuda.is_available() else False
     args.gpu = 0
     args.use_multi_gpu = False
@@ -47,7 +43,6 @@ def get_args(args):
     args.freq = 'b'  # freq for time features encoding, options:[s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h
 
     args.seq_len = 20  # input sequence length of Informer encoder
-    # Informer decoder input: concat[start token series(label_len), zero padding series(pred_len)]
 
     args.d_model = 1024  # dimension of model
     args.n_heads = 4  # num of heads
@@ -84,7 +79,7 @@ args = get_args(get_default_args(file_name))
 
 Exp = Exp_Informer
 
-for ii in range(args.itr):
+for ii in range(0, 1):
     # setting record of experiments
     setting = '{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_at{}_fc{}_eb{}_dt{}_mx{}_{}_{}'.format(args.model,
                                                                                                          args.data,
@@ -102,7 +97,7 @@ for ii in range(args.itr):
                                                                                                          args.embed,
                                                                                                          args.distil,
                                                                                                          args.mix,
-                                                                                                         args.des, ii)
+                                                                                                         ii)
 
     exp = Exp(args)  # set experiments
 
